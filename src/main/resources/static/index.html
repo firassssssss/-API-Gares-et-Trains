@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Gares/Trains - Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 30px;
+        }
+
+        .sidebar {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            max-height: 800px;
+            overflow-y: auto;
+        }
+
+        .sidebar h2 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #3498db;
+            font-size: 1.4rem;
+        }
+
+        .category {
+            margin-bottom: 25px;
+        }
+
+        .category h3 {
+            color: #34495e;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .category h3::before {
+            content: "▶";
+            font-size: 0.8rem;
+            color: #3498db;
+        }
+
+        .endpoint-btn {
+            display: block;
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            text-align: left;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .endpoint-btn:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .endpoint-btn::after {
+            content: "→";
+            position: absolute;
+            right: 15px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .endpoint-btn:hover::after {
+            opacity: 1;
+        }
+
+        .endpoint-btn.get { background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); }
+        .endpoint-btn.post { background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); }
+        .endpoint-btn.put { background: linear-gradient(135deg, #f39c12 0%, #d35400 100%); }
+        .endpoint-btn.delete { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); }
+        .endpoint-btn.patch { background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%); }
+
+        .content-area {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .form-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 5px solid #3498db;
+        }
+
+        .form-section h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #34495e;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+            background: white;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(46, 204, 113, 0.3);
+        }
+
+        .results-section {
+            margin-top: 30px;
+        }
+
+        .results-section h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .results-section h3::before {
+            content: "📋";
+        }
+
+        #statusMessage {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+            animation: fadeIn 0.5s;
+        }
+
+        .status-success {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            color: #155724;
+            border: 2px solid #28a745;
+        }
+
+        .status-error {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            color: #721c24;
+            border: 2px solid #dc3545;
+        }
+
+        #result {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            max-height: 500px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            border: 2px solid #34495e;
+        }
+
+        .method-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-right: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .badge-get { background: #27ae60; color: white; }
+        .badge-post { background: #2980b9; color: white; }
+        .badge-put { background: #d35400; color: white; }
+        .badge-delete { background: #c0392b; color: white; }
+        .badge-patch { background: #8e44ad; color: white; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+            border-left: 5px solid #fdcb6e;
+        }
+
+        .info-box h4 {
+            color: #2d3436;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .info-box p {
+            color: #636e72;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 1024px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                order: 2;
+            }
+            
+            .content-area {
+                order: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚂 API Gares et Trains</h1>
+            <p>Interface de test - 15 endpoints disponibles</p>
+        </header>
+
+        <div class="main-layout">
+            <!-- Sidebar with ALL 15 endpoints -->
+            <div class="sidebar">
+                <h2>📋 15 Endpoints API</h2>
+                
+                <div class="category">
+                    <h3>Gares (6 endpoints)</h3>
+                    <button class="endpoint-btn get" onclick="showForm('testApi')">
+                        <span class="method-badge badge-get">GET</span>
+                        1. Tester API
+                    </button>
+                    <button class="endpoint-btn post" onclick="showForm('createGare')">
+                        <span class="method-badge badge-post">POST</span>
+                        2. Créer une gare
+                    </button>
+                    <button class="endpoint-btn get" onclick="listGares()">
+                        <span class="method-badge badge-get">GET</span>
+                        3. Lister toutes les gares
+                    </button>
+                    <button class="endpoint-btn get" onclick="showForm('getGareById')">
+                        <span class="method-badge badge-get">GET</span>
+                        4. Gare par ID
+                    </button>
+                    <button class="endpoint-btn put" onclick="showForm('updateGare')">
+                        <span class="method-badge badge-put">PUT</span>
+                        5. Mettre à jour une gare
+                    </button>
+                    <button class="endpoint-btn delete" onclick="showForm('deleteGare')">
+                        <span class="method-badge badge-delete">DELETE</span>
+                        10. Supprimer une gare
+                    </button>
+                    <button class="endpoint-btn get" onclick="showForm('garesVille')">
+                        <span class="method-badge badge-get">GET</span>
+                        11. Gares par ville
+                    </button>
+                    <button class="endpoint-btn get" onclick="getGaresOuvertes()">
+                        <span class="method-badge badge-get">GET</span>
+                        12. Gares ouvertes
+                    </button>
+                    <button class="endpoint-btn get" onclick="showForm('getStats')">
+                        <span class="method-badge badge-get">GET</span>
+                        13. Statistiques gare
+                    </button>
+                </div>
+
+                <div class="category">
+                    <h3>Trains (6 endpoints)</h3>
+                    <button class="endpoint-btn post" onclick="showForm('createTrain')">
+                        <span class="method-badge badge-post">POST</span>
+                        6. Créer un train
+                    </button>
+                    <button class="endpoint-btn get" onclick="listTrains()">
+                        <span class="method-badge badge-get">GET</span>
+                        7. Lister tous les trains
+                    </button>
+                    <button class="endpoint-btn get" onclick="showForm('searchTrains')">
+                        <span class="method-badge badge-get">GET</span>
+                        8. Recherche trains par villes
+                    </button>
+                    <button class="endpoint-btn delete" onclick="showForm('deleteTrain')">
+                        <span class="method-badge badge-delete">DELETE</span>
+                        9. Supprimer un train
+                    </button>
+                    <button class="endpoint-btn get" onclick="getDuree()">
+                        <span class="method-badge badge-get">GET</span>
+                        14. Durée de voyage
+                    </button>
+                    <button class="endpoint-btn get" onclick="showForm('advancedSearch')">
+                        <span class="method-badge badge-get">GET</span>
+                        15. Recherche avancée
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main content area -->
+            <div class="content-area">
+                <div id="formContainer">
+                    <!-- Form will be dynamically loaded here -->
+                    <div class="form-section">
+                        <h3>👋 Bienvenue - 15 Endpoints Disponibles</h3>
+                        <p>Sélectionnez une action dans la barre latérale.</p>
+                        <div class="info-box">
+                            <h4>📊 Répartition des endpoints:</h4>
+                            <p><strong>Gares:</strong> 9 endpoints (1-5, 10-13)</p>
+                            <p><strong>Trains:</strong> 6 endpoints (6-9, 14-15)</p>
+                            <p><strong>Total:</strong> 15 endpoints implémentés</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="results-section">
+                    <h3>Résultats</h3>
+                    <div id="statusMessage"></div>
+                    <pre id="result">Les résultats apparaîtront ici...</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Templates for ALL 15 endpoints -->
+    <script>
+        const API_BASE = 'http://localhost:8787/api';
+        let currentForm = null;
+
+        const formTemplates = {
+            testApi: {
+                title: '1. Tester la connexion API',
+                template: `
+                    <div class="form-section">
+                        <h3>1. 🔧 Tester la connexion API</h3>
+                        <p>Endpoint: <code>GET /api/gares</code></p>
+                        <button class="submit-btn" onclick="testApi()">Tester la connexion</button>
+                    </div>
+                `
+            },
+            createGare: {
+                title: '2. Créer une gare',
+                template: `
+                    <div class="form-section">
+                        <h3>2. 🏗️ Créer une nouvelle gare</h3>
+                        <p>Endpoint: <code>POST /api/gares</code></p>
+                        <form id="createGareForm" onsubmit="event.preventDefault(); createGare();">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Nom de la gare:</label>
+                                    <input type="text" id="gareNom" placeholder="Gare de Lyon" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Ville:</label>
+                                    <input type="text" id="gareVille" placeholder="Paris" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Nombre de voies:</label>
+                                    <input type="number" id="gareVoies" placeholder="10" min="1" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Statut:</label>
+                                    <select id="gareStatut">
+                                        <option value="true">Ouverte</option>
+                                        <option value="false">Fermée</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button type="submit" class="submit-btn">Créer la gare</button>
+                        </form>
+                    </div>
+                `
+            },
+            getGareById: {
+                title: '4. Obtenir une gare par ID',
+                template: `
+                    <div class="form-section">
+                        <h3>4. 🔍 Obtenir une gare par ID</h3>
+                        <p>Endpoint: <code>GET /api/gares/{id}</code></p>
+                        <form id="getGareForm" onsubmit="event.preventDefault(); getGareById();">
+                            <div class="form-group">
+                                <label>ID de la gare:</label>
+                                <input type="number" id="gareId" placeholder="1" min="1" required>
+                            </div>
+                            <button type="submit" class="submit-btn">Récupérer la gare</button>
+                        </form>
+                    </div>
+                `
+            },
+            updateGare: {
+                title: '5. Mettre à jour une gare',
+                template: `
+                    <div class="form-section">
+                        <h3>5. ✏️ Mettre à jour une gare</h3>
+                        <p>Endpoint: <code>PUT /api/gares/{id}</code></p>
+                        <form id="updateGareForm" onsubmit="event.preventDefault(); updateGare();">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>ID de la gare à modifier:</label>
+                                    <input type="number" id="updateId" placeholder="1" min="1" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Nouveau nom:</label>
+                                    <input type="text" id="updateNom" placeholder="Gare de Lyon Modifiée" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Ville:</label>
+                                    <input type="text" id="updateVille" placeholder="Paris" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Nombre de voies:</label>
+                                    <input type="number" id="updateVoies" placeholder="12" min="1" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="submit-btn">Mettre à jour la gare</button>
+                        </form>
+                    </div>
+                `
+            },
+            deleteGare: {
+                title: '10. Supprimer une gare',
+                template: `
+                    <div class="form-section">
+                        <h3>10. 🗑️ Supprimer une gare</h3>
+                        <p>Endpoint: <code>DELETE /api/gares/{id}</code></p>
+                        <form id="deleteGareForm" onsubmit="event.preventDefault(); deleteGare();">
+                            <div class="form-group">
+                                <label>ID de la gare à supprimer:</label>
+                                <input type="number" id="deleteGareId" placeholder="1" min="1" required>
+                            </div>
+                            <button type="submit" class="submit-btn" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">
+                                Supprimer la gare
+                            </button>
+                        </form>
+                    </div>
+                `
+            },
+            garesVille: {
+                title: '11. Gares par ville',
+                template: `
+                    <div class="form-section">
+                        <h3>11. 🏙️ Gares par ville</h3>
+                        <p>Endpoint: <code>GET /api/gares/ville/{ville}</code></p>
+                        <form id="garesVilleForm" onsubmit="event.preventDefault(); getGaresByVille();">
+                            <div class="form-group">
+                                <label>Nom de la ville:</label>
+                                <input type="text" id="searchVille" placeholder="Paris" required>
+                            </div>
+                            <button type="submit" class="submit-btn">Rechercher les gares</button>
+                        </form>
+                    </div>
+                `
+            },
+            createTrain: {
+                title: '6. Créer un train',
+                template: `
+                    <div class="form-section">
+                        <h3>6. 🚄 Créer un nouveau train</h3>
+                        <p>Endpoint: <code>POST /api/trains</code></p>
+                        <form id="createTrainForm" onsubmit="event.preventDefault(); createTrain();">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Numéro du train:</label>
+                                    <input type="text" id="trainNumero" placeholder="TGV7801" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Heure de départ:</label>
+                                    <input type="datetime-local" id="trainDepart" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Heure d'arrivée:</label>
+                                    <input type="datetime-local" id="trainArrivee" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>ID Gare de départ:</label>
+                                    <input type="number" id="trainGareDepart" placeholder="1" min="1" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>ID Gare d'arrivée:</label>
+                                    <input type="number" id="trainGareArrivee" placeholder="2" min="1" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="submit-btn">Créer le train</button>
+                        </form>
+                    </div>
+                `
+            },
+            deleteTrain: {
+                title: '9. Supprimer un train',
+                template: `
+                    <div class="form-section">
+                        <h3>9. 🗑️ Supprimer un train</h3>
+                        <p>Endpoint: <code>DELETE /api/trains/{id}</code></p>
+                        <form id="deleteTrainForm" onsubmit="event.preventDefault(); deleteTrain();">
+                            <div class="form-group">
+                                <label>ID du train à supprimer:</label>
+                                <input type="number" id="deleteTrainId" placeholder="1" min="1" required>
+                            </div>
+                            <button type="submit" class="submit-btn" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">
+                                Supprimer le train
+                            </button>
+                        </form>
+                    </div>
+                `
+            },
+            searchTrains: {
+                title: '8. Rechercher trains par villes',
+                template: `
+                    <div class="form-section">
+                        <h3>8. 🔍 Rechercher trains par villes</h3>
+                        <p>Endpoint: <code>GET /api/trains/recherche?depart={ville}&arrivee={ville}</code></p>
+                        <form id="searchTrainsForm" onsubmit="event.preventDefault(); searchTrains();">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Ville de départ:</label>
+                                    <input type="text" id="villeDepart" placeholder="Paris" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Ville d'arrivée:</label>
+                                    <input type="text" id="villeArrivee" placeholder="Lyon" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="submit-btn">Rechercher les trains</button>
+                        </form>
+                    </div>
+                `
+            },
+            advancedSearch: {
+                title: '15. Recherche avancée',
+                template: `
+                    <div class="form-section">
+                        <h3>15. 🔎 Recherche avancée de trains</h3>
+                        <p>Endpoint: <code>GET /api/trains/recherche-avancee</code></p>
+                        <form id="advancedSearchForm" onsubmit="event.preventDefault(); advancedSearch();">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Ville de départ:</label>
+                                    <input type="text" id="advVilleDepart" placeholder="Paris">
+                                </div>
+                                <div class="form-group">
+                                    <label>Ville d'arrivée:</label>
+                                    <input type="text" id="advVilleArrivee" placeholder="Lyon">
+                                </div>
+                                <div class="form-group">
+                                    <label>Durée maximale (minutes):</label>
+                                    <input type="number" id="advDureeMax" placeholder="300" min="1">
+                                </div>
+                                <div class="form-group">
+                                    <label>Date de début:</label>
+                                    <input type="datetime-local" id="advDateDebut">
+                                </div>
+                                <div class="form-group">
+                                    <label>Date de fin:</label>
+                                    <input type="datetime-local" id="advDateFin">
+                                </div>
+                            </div>
+                            <button type="submit" class="submit-btn">Lancer la recherche avancée</button>
+                        </form>
+                    </div>
+                `
+            },
+            getStats: {
+                title: '13. Statistiques gare',
+                template: `
+                    <div class="form-section">
+                        <h3>13. 📊 Statistiques d'une gare</h3>
+                        <p>Endpoint: <code>GET /api/gares/{id}/statistiques</code></p>
+                        <form id="getStatsForm" onsubmit="event.preventDefault(); getStats();">
+                            <div class="form-group">
+                                <label>ID de la gare:</label>
+                                <input type="number" id="statsGareId" placeholder="1" min="1" required>
+                            </div>
+                            <button type="submit" class="submit-btn">Obtenir les statistiques</button>
+                        </form>
+                    </div>
+                `
+            }
+        };
+
+        function showForm(formName) {
+            currentForm = formName;
+            const form = formTemplates[formName];
+            document.getElementById('formContainer').innerHTML = form.template;
+            document.getElementById('statusMessage').innerHTML = '';
+            document.getElementById('result').textContent = 'Les résultats apparaîtront ici...';
+            
+            // Update header with endpoint number
+            document.querySelector('.content-area .form-section h3').innerHTML = 
+                form.title + ' <small style="color:#666;font-size:0.8em">(Endpoint #' + 
+                form.title.split('.')[0] + ')</small>';
+        }
+
+        function displayResult(data, success = true) {
+            const statusElement = document.getElementById('statusMessage');
+            const resultElement = document.getElementById('result');
+            
+            statusElement.className = success ? 'status-success' : 'status-error';
+            statusElement.textContent = success ? '✅ Opération réussie' : '❌ Erreur';
+            
+            if (typeof data === 'object') {
+                resultElement.textContent = JSON.stringify(data, null, 2);
+            } else {
+                resultElement.textContent = data;
+            }
+            
+            resultElement.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // API Functions for ALL 15 endpoints
+        async function callApi(endpoint, method = 'GET', body = null) {
+            try {
+                const options = { method };
+                if (body) {
+                    options.headers = { 'Content-Type': 'application/json' };
+                    options.body = JSON.stringify(body);
+                }
+                
+                const response = await fetch(API_BASE + endpoint, options);
+                const data = await response.json();
+                displayResult(data, response.ok);
+                return data;
+            } catch (error) {
+                displayResult('Erreur de connexion: ' + error.message, false);
+                throw error;
+            }
+        }
+
+        // 1. TEST CONNEXION API
+        function testApi() {
+            callApi('/gares');
+        }
+
+        // 2. CRÉER UNE GARE
+        function createGare() {
+            const gare = {
+                nom: document.getElementById('gareNom').value,
+                ville: document.getElementById('gareVille').value,
+                nombreVoies: parseInt(document.getElementById('gareVoies').value),
+                estOuverte: document.getElementById('gareStatut').value === 'true'
+            };
+            callApi('/gares', 'POST', gare);
+        }
+
+        // 3. LISTER TOUTES LES GARES
+        function listGares() {
+            callApi('/gares');
+        }
+
+        // 4. OBTENIR UNE GARE PAR ID
+        function getGareById() {
+            const id = document.getElementById('gareId').value;
+            callApi('/gares/' + id);
+        }
+
+        // 5. METTRE À JOUR UNE GARE
+        function updateGare() {
+            const id = document.getElementById('updateId').value;
+            const gare = {
+                nom: document.getElementById('updateNom').value,
+                ville: document.getElementById('updateVille').value,
+                nombreVoies: parseInt(document.getElementById('updateVoies').value),
+                estOuverte: true
+            };
+            callApi('/gares/' + id, 'PUT', gare);
+        }
+
+        // 10. SUPPRIMER UNE GARE
+        function deleteGare() {
+            const id = document.getElementById('deleteGareId').value;
+            if (confirm(`Supprimer la gare #${id} ?`)) {
+                callApi('/gares/' + id, 'DELETE');
+            }
+        }
+
+        // 11. GARES PAR VILLE
+        function getGaresByVille() {
+            const ville = document.getElementById('searchVille').value;
+            callApi('/gares/ville/' + ville);
+        }
+
+        // 12. GARES OUVERTES
+        function getGaresOuvertes() {
+            callApi('/gares/ouvertes');
+        }
+
+        // 6. CRÉER UN TRAIN
+        function createTrain() {
+            const train = {
+                numeroTrain: document.getElementById('trainNumero').value,
+                heureDepart: document.getElementById('trainDepart').value + ':00',
+                heureArrivee: document.getElementById('trainArrivee').value + ':00',
+                gareDepart: { id: parseInt(document.getElementById('trainGareDepart').value) },
+                gareArrivee: { id: parseInt(document.getElementById('trainGareArrivee').value) }
+            };
+            callApi('/trains', 'POST', train);
+        }
+
+        // 7. LISTER TOUS LES TRAINS
+        function listTrains() {
+            callApi('/trains');
+        }
+
+        // 8. RECHERCHER TRAINS PAR VILLES
+        function searchTrains() {
+            const depart = document.getElementById('villeDepart').value;
+            const arrivee = document.getElementById('villeArrivee').value;
+            callApi(`/trains/recherche?depart=${depart}&arrivee=${arrivee}`);
+        }
+
+        // 9. SUPPRIMER UN TRAIN
+        function deleteTrain() {
+            const id = document.getElementById('deleteTrainId').value;
+            if (confirm(`Supprimer le train #${id} ?`)) {
+                callApi('/trains/' + id, 'DELETE');
+            }
+        }
+
+        // 13. STATISTIQUES GARE
+        function getStats() {
+            const id = document.getElementById('statsGareId').value;
+            callApi('/gares/' + id + '/statistiques');
+        }
+
+        // 14. DURÉE DE VOYAGE
+        function getDuree() {
+            const id = prompt('Entrez l\'ID du train pour calculer la durée:');
+            if (id) {
+                callApi('/trains/' + id + '/duree');
+            }
+        }
+
+        // 15. RECHERCHE AVANCÉE TRAINS
+        function advancedSearch() {
+            const villeDepart = document.getElementById('advVilleDepart').value;
+            const villeArrivee = document.getElementById('advVilleArrivee').value;
+            const dureeMax = document.getElementById('advDureeMax').value;
+            const dateDebut = document.getElementById('advDateDebut').value;
+            const dateFin = document.getElementById('advDateFin').value;
+            
+            let url = '/trains/recherche-avancee?';
+            const params = [];
+            
+            if (villeDepart) params.push(`villeDepart=${encodeURIComponent(villeDepart)}`);
+            if (villeArrivee) params.push(`villeArrivee=${encodeURIComponent(villeArrivee)}`);
+            if (dureeMax) params.push(`dureeMaxMinutes=${dureeMax}`);
+            if (dateDebut) params.push(`dateDebut=${encodeURIComponent(dateDebut + ':00')}`);
+            if (dateFin) params.push(`dateFin=${encodeURIComponent(dateFin + ':00')}`);
+            
+            url += params.join('&');
+            callApi(url);
+        }
+
+        // Initialize date fields
+        window.onload = function() {
+            const now = new Date();
+            const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+            
+            const formatForInput = (date) => date.toISOString().slice(0, 16);
+            
+            const originalShowForm = showForm;
+            showForm = function(formName) {
+                originalShowForm(formName);
+                
+                if (formName === 'createTrain') {
+                    setTimeout(() => {
+                        if (document.getElementById('trainDepart')) {
+                            document.getElementById('trainDepart').value = formatForInput(now);
+                            document.getElementById('trainArrivee').value = formatForInput(tomorrow);
+                        }
+                    }, 100);
+                }
+                
+                if (formName === 'advancedSearch') {
+                    setTimeout(() => {
+                        if (document.getElementById('advDateDebut')) {
+                            document.getElementById('advDateDebut').value = formatForInput(now);
+                            document.getElementById('advDateFin').value = formatForInput(tomorrow);
+                        }
+                    }, 100);
+                }
+            };
+        };
+    </script>
+</body>
+</html>
